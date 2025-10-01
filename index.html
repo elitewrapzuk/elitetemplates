@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Elite Wrapz Message Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 100%;
+      margin: 0;
+      padding: 15px;
+      background: #fafafa;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 12px;
+      display: block;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: none;
+    }
+    button {
+      background: #006400;
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    button:hover {
+      background: #008000;
+    }
+    .row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .extraFields {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+    }
+    h4 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Elite Wrapz Message Dashboard</h2>
+
+  <!-- Client Details -->
+  <label>Client Name</label>
+  <input type="text" id="clientName" placeholder="Enter client first name">
+
+  <label>Client Email</label>
+  <input type="email" id="clientEmail" placeholder="Enter client email">
+
+  <!-- Template Selection -->
+  <label>Select Template</label>
+  <select id="templateSelect">
+    <option value="">-- Choose a template --</option>
+  </select>
+
+  <!-- Extra Fields for Deposit Request -->
+  <div id="depositFields" class="extraFields">
+    <h4>Deposit Request Details</h4>
+    <label>Quote Total (£)</label>
+    <input type="number" id="quoteTotal_deposit">
+    <label>Deposit Total (£)</label>
+    <input type="number" id="depositTotal_deposit">
+    <label>Payment Link</label>
+    <input type="url" id="paymentLink_deposit">
+  </div>
+
+  <!-- Extra Fields for Quote Sent -->
+  <div id="quoteSentFields" class="extraFields">
+    <h4>Quote Sent Details</h4>
+    <label>Quote Total (£)</label>
+    <input type="number" id="quoteTotal_quote">
+    <label>Deposit Total (£)</label>
+    <input type="number" id="depositTotal_quote">
+  </div>
+
+  <!-- Extra Fields for Booking Confirmation -->
+  <div id="bookingFields" class="extraFields">
+    <h4>Booking Details</h4>
+    <label>Booking Date</label>
+    <input type="text" id="bookingDate" placeholder="e.g. 12th March 2025">
+    <label>Booking Time</label>
+    <input type="text" id="bookingTime" placeholder="e.g. 10:00 AM">
+  </div>
+
+  <!-- Generated Message -->
+  <label>Generated Message</label>
+  <textarea id="messageBox" rows="14" readonly></textarea>
+
+  <!-- Actions -->
+  <div class="row">
+    <button onclick="copyMessage()">📋 Copy to Clipboard</button>
+    <button onclick="openEmail()">✉️ Open in Email App</button>
+  </div>
+
+  <script>
+    // Templates
+    let templates = {
+      "Quote Sent": {
+        subject: "Your Elite Wrapz Quote",
+        body: "Hi {name},\n\nThank you for considering Elite Wrapz!\n\nYour total quote is {quoteTotal}, with a deposit of {depositTotal} required to secure your booking.\n\nPlease note:\n- Quotes are valid for 30 days.\n- To accept this quote, simply reply to this message.\n- We offer a Price Match Guarantee with proof of an official business quote (letterhead or email with full breakdown).\n- Discounts must be mentioned before your deposit is paid.\n- Deposits are non-refundable unless otherwise stated in our terms.\n\nFull terms & conditions: https://elitewrapz.uk/termsandconditions\n\nBest regards,\nThe Elite Wrapz Team"
+      },
+
+      "Quote Reminder": {
+        subject: "Following Up on Your Elite Wrapz Quote",
+        body: "Hi {name},\n\nJust checking in to see if you had a chance to review your quote from Elite Wrapz.\n\nIf you’d like to move forward, we’d love to get you booked in and secure your date. If you have any questions, feel free to reply anytime.\n\nBest regards,\nThe Elite Wrapz Team"
+      },
+
+      "Deposit Request": {
+        subject: "Your Elite Wrapz Quote & Deposit Request",
+        body: "Hi {name},\n\nThank you for choosing Elite Wrapz!\n\nYour quote total is {quoteTotal}, with a deposit of {depositTotal} required to secure your booking. Please use the link below to pay your deposit:\n\n🔗 {paymentLink}\n\n⚠️ Please note:\n- We can only hold your requested date for 24 hours without a deposit.\n- All quotes are valid for 30 days.\n- Any discount codes must be provided before your deposit is paid.\n\nFull terms: https://elitewrapz.uk/termsandconditions\n\nBest regards,\nThe Elite Wrapz Team"
+      },
+
+      "Services Agreement": {
+        subject: "Elite Wrapz – Services Agreement Review",
+        body: "Hi {name},\n\nPlease find attached our Services Agreement for you to review.\n\nIf you’re happy with everything, I can send you a secure link to provide your signature digitally. Alternatively, if we’re meeting in person, I can collect your signature on the day.\n\nIf you have any questions, please let me know before signing.\n\nOnce signed, we’ll be ready to move forward with your project.\n\nBest regards,\nThe Elite Wrapz Team"
+      },
+
+      "Booking Confirmation": {
+        subject: "Your Elite Wrapz Booking is Confirmed",
+        body: "Hi {name},\n\nWe’re pleased to confirm your Elite Wrapz booking:\n\n📅 Date: {bookingDate}\n⏰ Time: {bookingTime}\n\nBefore the day, please make sure all wrap areas are clear of items.\n\nYou’ll also receive a final checklist email 1 day before we arrive.\n\nBest regards,\nThe Elite Wrapz Team"
+      },
+
+      "Wrap Day Prep": {
+        subject: "Final Prep Before Your Wrap Day – Elite Wrapz",
+        body: "Hi {name},\n\nYour big vinyl-wrapping day is almost here, and we’re just as excited as you are! Before we get started, here are a few quick notes to help things run smoothly:\n\n📦 Access & Parking\nPlease let us know about any tricky gates, parking restrictions, or local surprises.\n\n🧹 Clear Surfaces\nKindly make sure worktops and the surrounding area are clear. Insurance rules mean we can’t move personal items.\n\n🐾 Pets & Safety\nPlease keep pets and little ones away from the workspace during installation.\n\n🧴 Cleaning & Primer\nWe use strong cleaning agents and a primer before wrapping. If anyone in your household is pregnant, sensitive to strong smells, or you’d prefer us not to use these, please let us know in advance. The primer smell is temporary and fades quickly, but the cleaner lingers a little longer.\n\n⏳ All-Day Job\nWrapping can take most of the day depending on your kitchen. If you need to pop out, that’s no problem—just please ensure someone is back home for the final handover.\n\n💳 Payments\nIf there are any outstanding payments, now’s the time to get those squared away.\n\nWe’re looking forward to making your kitchen look amazing!\nBest regards,\nElite Wrapz Team"
+      },
+
+      "Thank You & Reviews": {
+        subject: "Thank You for Choosing Elite Wrapz – Share Your Thoughts",
+        body: "Hi {name},\n\nWe just wanted to say a huge thank you for choosing Elite Wrapz to transform your space – we hope you love the results!\n\nYour feedback means the world to us and helps others discover what we do. Please leave us a review:\n\n⭐ Google: https://share.google/JaMpIl01UkDLu8Qhx\n⭐ Trustpilot: https://uk.trustpilot.com/review/elitewrapz.uk\n⭐ Facebook: https://www.facebook.com/share/1ChEa8KkqQ/?mibextid=\n\n💡 Leave a review on all three and you’ll receive 20% off your next wrap as a thank you!\n\nBest regards,\nThe Elite Wrapz Team"
+      }
+    };
+
+    const select = document.getElementById("templateSelect");
+    const messageBox = document.getElementById("messageBox");
+
+    function refreshTemplateList() {
+      select.innerHTML = '<option value="">-- Choose a template --</option>';
+      const order = [
+        "Quote Sent",
+        "Quote Reminder",
+        "Deposit Request",
+        "Services Agreement",
+        "Booking Confirmation",
+        "Wrap Day Prep",
+        "Thank You & Reviews"
+      ];
+      order.forEach(name => {
+        if (templates[name]) {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          select.appendChild(option);
+        }
+      });
+    }
+
+    refreshTemplateList();
+
+    function updateMessage() {
+      const name = document.getElementById("clientName").value || "Customer";
+      const selected = select.value;
+      if (selected && templates[selected]) {
+        let msg = templates[selected].body.replace("{name}", name);
+
+        if (selected === "Deposit Request") {
+          let q = document.getElementById("quoteTotal_deposit").value;
+          let d = document.getElementById("depositTotal_deposit").value;
+          const l = document.getElementById("paymentLink_deposit").value || "[Insert Link]";
+          const quote = q ? `£${q}` : "____";
+          const deposit = d ? `£${d}` : "____";
+          msg = msg.replace("{quoteTotal}", quote)
+                   .replace("{depositTotal}", deposit)
+                   .replace("{paymentLink}", l);
+        }
+
+        if (selected === "Quote Sent") {
+          let q = document.getElementById("quoteTotal_quote").value;
+          let d = document.getElementById("depositTotal_quote").value;
+          const quote = q ? `£${q}` : "____";
+          const deposit = d ? `£${d}` : "____";
+          msg = msg.replace("{quoteTotal}", quote)
+                   .replace("{depositTotal}", deposit);
+        }
+
+        if (selected === "Booking Confirmation") {
+          const date = document.getElementById("bookingDate").value || "____";
+          const time = document.getElementById("bookingTime").value || "____";
+          msg = msg.replace("{bookingDate}", date)
+                   .replace("{bookingTime}", time);
+        }
+
+        messageBox.value = msg;
+      } else {
+        messageBox.value = "";
+      }
+    }
+
+    select.addEventListener("change", function() {
+      document.querySelectorAll(".extraFields").forEach(div => div.style.display = "none");
+      if (this.value === "Deposit Request") document.getElementById("depositFields").style.display = "block";
+      if (this.value === "Quote Sent") document.getElementById("quoteSentFields").style.display = "block";
+      if (this.value === "Booking Confirmation") document.getElementById("bookingFields").style.display = "block";
+      updateMessage();
+    });
+
+    document.querySelectorAll("input").forEach(input => {
+      input.addEventListener("input", updateMessage);
+    });
+
+    function copyMessage() {
+      if (!messageBox.value) return alert("No message to copy!");
+      navigator.clipboard.writeText(messageBox.value);
+      alert("Message copied to clipboard!");
+    }
+
+    function openEmail() {
+      const email = document.getElementById("clientEmail").value;
+      const selected = select.value;
+      if (!selected || !templates[selected]) return alert("Please select a template first.");
+      const subject = templates[selected].subject;
+      const body = encodeURIComponent(messageBox.value);
+      if (email && body) {
+        window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${body}`;
+      } else {
+        alert("Please enter the client’s email and select a template.");
+      }
+    }
+  </script>
+</body>
+</html>
