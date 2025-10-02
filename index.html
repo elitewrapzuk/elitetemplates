@@ -30,9 +30,7 @@
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
-    textarea {
-      resize: none;
-    }
+    textarea { resize: none; }
     button {
       background: #006400;
       color: white;
@@ -42,9 +40,7 @@
       border-radius: 8px;
       padding: 14px;
     }
-    button:hover {
-      background: #008000;
-    }
+    button:hover { background: #008000; }
     .row {
       display: flex;
       flex-direction: column;
@@ -58,9 +54,7 @@
       border-radius: 6px;
       background: #fff;
     }
-    h4 {
-      margin-top: 0;
-    }
+    h4 { margin-top: 0; }
   </style>
 </head>
 <body>
@@ -108,6 +102,19 @@
     <input type="text" id="bookingTime" placeholder="e.g. 10:00 AM">
   </div>
 
+  <!-- Extra Fields for Signature Request -->
+  <div id="signatureFields" class="extraFields">
+    <h4>Signature Request Details</h4>
+    <label>Signature Link</label>
+    <input type="url" id="signatureLink" placeholder="Paste signature link">
+    <label>Agreement Type</label>
+    <select id="agreementType">
+      <option value="Services Agreement">Services Agreement</option>
+      <option value="Cooling-Off Waiver">14 Day Cooling-Off Waiver</option>
+      <option value="Payment Plan Agreement">Payment Plan Agreement</option>
+    </select>
+  </div>
+
   <!-- Generated Message -->
   <label>Generated Message</label>
   <textarea id="messageBox" rows="14" readonly></textarea>
@@ -141,6 +148,11 @@
         body: "Hi {name},\n\nPlease find attached our Services Agreement for you to review.\n\nIf you’re happy with everything, I can send you a secure link to provide your signature digitally. Alternatively, if we’re meeting in person, I can collect your signature on the day.\n\nIf you have any questions, please let me know before signing.\n\nOnce signed, we’ll be ready to move forward with your project.\n\nBest regards,\nThe Elite Wrapz Team"
       },
 
+      "Signature Request": {
+        subject: "Elite Wrapz – Please Provide Your Signature",
+        body: "Hi {name},\n\nWe’ve set up a secure link for you to digitally sign your {agreementType}.\n\nPlease click below to review and sign:\n\n🔗 {signatureLink}\n\nOnce signed, you’ll receive a confirmation email and your copy of the signed document.\n\nIf you have any questions, let us know before completing the signature.\n\nBest regards,\nThe Elite Wrapz Team"
+      },
+
       "Booking Confirmation": {
         subject: "Your Elite Wrapz Booking is Confirmed",
         body: "Hi {name},\n\nWe’re pleased to confirm your Elite Wrapz booking:\n\n📅 Date: {bookingDate}\n⏰ Time: {bookingTime}\n\nBefore the day, please make sure all wrap areas are clear of items.\n\nYou’ll also receive a final checklist email 1 day before we arrive.\n\nBest regards,\nThe Elite Wrapz Team"
@@ -167,6 +179,7 @@
         "Quote Reminder",
         "Deposit Request",
         "Services Agreement",
+        "Signature Request", // ✅ new
         "Booking Confirmation",
         "Wrap Day Prep",
         "Thank You & Reviews"
@@ -216,6 +229,13 @@
                    .replace("{bookingTime}", time);
         }
 
+        if (selected === "Signature Request") {
+          const link = document.getElementById("signatureLink").value || "[Insert Link]";
+          const agreement = document.getElementById("agreementType").value || "Agreement";
+          msg = msg.replace("{signatureLink}", link)
+                   .replace("{agreementType}", agreement);
+        }
+
         messageBox.value = msg;
       } else {
         messageBox.value = "";
@@ -227,10 +247,11 @@
       if (this.value === "Deposit Request") document.getElementById("depositFields").style.display = "block";
       if (this.value === "Quote Sent") document.getElementById("quoteSentFields").style.display = "block";
       if (this.value === "Booking Confirmation") document.getElementById("bookingFields").style.display = "block";
+      if (this.value === "Signature Request") document.getElementById("signatureFields").style.display = "block";
       updateMessage();
     });
 
-    document.querySelectorAll("input").forEach(input => {
+    document.querySelectorAll("input, select").forEach(input => {
       input.addEventListener("input", updateMessage);
     });
 
