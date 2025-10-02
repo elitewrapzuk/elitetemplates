@@ -32,7 +32,7 @@
     }
     textarea { resize: none; }
     button {
-      background: #006400;
+      background: #01fabf;
       color: white;
       border: none;
       font-weight: bold;
@@ -149,7 +149,7 @@
       },
 
       "Signature Request": {
-        subject: "Elite Wrapz – Please Provide Your Signature",
+        subject: "Elite Wrapz has requested your signature – {agreementType}",
         body: "Hi {name},\n\nWe’ve set up a secure link for you to digitally sign your {agreementType}.\n\nPlease click below to review and sign:\n\n🔗 {signatureLink}\n\nOnce signed, you’ll receive a confirmation email and your copy of the signed document.\n\nIf you have any questions, let us know before completing the signature.\n\nBest regards,\nThe Elite Wrapz Team"
       },
 
@@ -201,6 +201,7 @@
       const selected = select.value;
       if (selected && templates[selected]) {
         let msg = templates[selected].body.replace("{name}", name);
+        let subject = templates[selected].subject;
 
         if (selected === "Deposit Request") {
           let q = document.getElementById("quoteTotal_deposit").value;
@@ -233,10 +234,12 @@
           const link = document.getElementById("signatureLink").value || "[Insert Link]";
           const agreement = document.getElementById("agreementType").value || "Agreement";
           msg = msg.replace("{signatureLink}", link)
-                   .replace("{agreementType}", agreement);
+                   .replace(/{agreementType}/g, agreement);
+          subject = subject.replace("{agreementType}", agreement);
         }
 
-        messageBox.value = msg;
+        document.getElementById("messageBox").value = msg;
+        document.getElementById("messageBox").dataset.subject = subject;
       } else {
         messageBox.value = "";
       }
@@ -265,7 +268,7 @@
       const email = document.getElementById("clientEmail").value;
       const selected = select.value;
       if (!selected || !templates[selected]) return alert("Please select a template first.");
-      const subject = templates[selected].subject;
+      const subject = messageBox.dataset.subject || templates[selected].subject;
       const body = encodeURIComponent(messageBox.value);
       if (email && body) {
         window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${body}`;
